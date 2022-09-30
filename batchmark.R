@@ -79,8 +79,7 @@ tuned_xgboost <- auto_tune(
 # Benchmark design ------------------------------------------------------------------------------------------------
 learners <- list(
   tuned_ranger,
-  tuned_xgboost,
-  tuned_xgboost_fixdepth
+  tuned_xgboost
 )
 
 design <- benchmark_grid(
@@ -108,7 +107,7 @@ as.data.frame(table(unwrap(getJobPars())[["learner_id"]]))
 # Submit ----------------------------------------------------------------------------------------------------------
 
 # Isolate job ids by learner for testing
-ids_xgb <- findExperiments(algo.pars = learner_id == "encodee.xgboost.tuned")
+ids_xgb <- findExperiments(algo.pars = learner_id == "encode.xgboost.tuned")
 ids_ranger <- findExperiments(algo.pars = learner_id == "ranger.tuned")
 
 submitJobs(ids_xgb)
