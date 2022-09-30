@@ -18,14 +18,14 @@ if (FALSE) {
 resample_outer <- rsmp("cv", folds = 10)
 resample_inner <- rsmp("cv", folds = 5)
 mymsr <- msr("classif.auc")
-mytrm <- trm("evals", n_evals = 50) # Trial mode
-# mytrm <- trm("evals", n_evals = 200)  # Serious mode
+# mytrm <- trm("evals", n_evals = 50) # Trial mode
+mytrm <- trm("evals", n_evals = 200)  # Serious mode
 mytnr <- tnr("random_search")
 
 
 # tasks
 tasks <- list(
-  tsk("pima"), tsk("german_credit"), tsk("penguins")
+  tsk("pima"), tsk("german_credit"), tsk("penguins"), tsk("spam")
 )
 
 # Wrapping learners into auto_tuners with optional factor encoding for xgb
