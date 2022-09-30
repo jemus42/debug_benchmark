@@ -25,7 +25,10 @@ mytnr <- tnr("random_search")
 
 # tasks
 tasks <- list(
-  tsk("pima"), tsk("german_credit"), tsk("penguins"), tsk("spam")
+  #tsk("pima"),
+  tsk("german_credit"),
+  #tsk("penguins"),
+  tsk("spam")
 )
 
 # Wrapping learners into auto_tuners with optional factor encoding for xgb
@@ -65,11 +68,11 @@ tuned_xgboost <- auto_tune(
                 ),
   .encode = TRUE,
   # Need to prefix params with learner id bc of pipeline
-  classif.xgboost.max_depth = p_int(1, 20),
-  classif.xgboost.subsample = p_dbl(0.1, 1),
-  classif.xgboost.colsample_bytree = p_dbl(0.1, 1),
-  classif.xgboost.nrounds = p_int(10, 5000),
-  classif.xgboost.eta = p_dbl(0, 1)
+  xgboost.max_depth = p_int(1, 20),
+  xgboost.subsample = p_dbl(0.1, 1),
+  xgboost.colsample_bytree = p_dbl(0.1, 1),
+  xgboost.nrounds = p_int(10, 5000),
+  xgboost.eta = p_dbl(0, 1)
 )
 
 # xgboost: fixed depth
@@ -79,10 +82,10 @@ tuned_xgboost_fixdepth <- auto_tune(
                 max_depth = 2, id = "xgboost_fixdepth"),
   .encode = TRUE,
   # Need to prefix params with learner id bc of pipeline
-  classif.xgboost_fixdepth.subsample = p_dbl(0.1, 1),
-  classif.xgboost_fixdepth.colsample_bytree = p_dbl(0.1, 1),
-  classif.xgboost_fixdepth.nrounds = p_int(10, 5000),
-  classif.xgboost_fixdepth.eta = p_dbl(0, 1)
+  xgboost_fixdepth.subsample = p_dbl(0.1, 1),
+  xgboost_fixdepth.colsample_bytree = p_dbl(0.1, 1),
+  xgboost_fixdepth.nrounds = p_int(10, 5000),
+  xgboost_fixdepth.eta = p_dbl(0, 1)
 )
 
 # Benchmark design
