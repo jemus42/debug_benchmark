@@ -1,5 +1,6 @@
 # Ensure current GitHub dependencies
 # run renv::restore() to install dependencies as stored in renv.lock
+renv::restore(prompt = FALSE)
 
 library(batchtools)
 library(mlr3)
@@ -25,12 +26,14 @@ mytnr <- tnr("random_search")
 
 # tasks
 tasks <- list(
-  #tsk("pima"),
+  #tsk("pima"), # has missings
   tsk("german_credit"),
-  #tsk("penguins"),
+  #tsk("penguins"), # has missings
   tsk("spam")
 )
 
+
+# Learners --------------------------------------------------------------------------------------------------------
 # Wrapping learners into auto_tuners with optional factor encoding for xgb
 auto_tune <- function(learner, .encode = FALSE, ...) {
   search_space <- ps(...)
@@ -62,10 +65,8 @@ tuned_ranger <- auto_tune(
 
 # xgboost
 tuned_xgboost <- auto_tune(
-  learner = lrn("classif.xgboost", predict_type = "prob",
-                nthread = 1, # Just to be safe
-                id = "xgboost"
-                ),
+  learner = lrn("classif.xgboost", predict_type = "prob", nthread = 1, # Just to be safe
+                id = "xgboost"),
   .encode = TRUE,
   # Need to prefix params with learner id bc of pipeline
   xgboost.max_depth = p_int(1, 20),
@@ -75,20 +76,7 @@ tuned_xgboost <- auto_tune(
   xgboost.eta = p_dbl(0, 1)
 )
 
-# xgboost: fixed depth
-tuned_xgboost_fixdepth <- auto_tune(
-  learner = lrn("classif.xgboost", predict_type = "prob",
-                nthread = 1, # Just to be safe
-                max_depth = 2, id = "xgboost_fixdepth"),
-  .encode = TRUE,
-  # Need to prefix params with learner id bc of pipeline
-  xgboost_fixdepth.subsample = p_dbl(0.1, 1),
-  xgboost_fixdepth.colsample_bytree = p_dbl(0.1, 1),
-  xgboost_fixdepth.nrounds = p_int(10, 5000),
-  xgboost_fixdepth.eta = p_dbl(0, 1)
-)
-
-# Benchmark design
+# Benchmark design ------------------------------------------------------------------------------------------------
 learners <- list(
   tuned_ranger,
   tuned_xgboost,
@@ -101,7 +89,7 @@ design <- benchmark_grid(
   resamplings = list(resample_outer)
 )
 
-# Run with batchtools
+# Batchtools setup ------------------------------------------------------------------------------------------------
 reg_dir <- here::here("registry")
 if (!dir.exists("registry")) dir.create("registry")
 
@@ -114,14 +102,16 @@ reg <- makeExperimentRegistry(reg_dir, seed = 230749)
 batchmark(design, reg = reg)
 
 # Overview of learner IDs
-table(unwrap(getJobPars())[["learner_id"]])
+as.data.frame(table(unwrap(getJobPars())[["learner_id"]]))
 
-# Submit
-ids_xgb <- findExperiments(algo.pars = learner_id == "encodexgboost.tuned")
-ids_xgb_fixdepth <- findExperiments(algo.pars = learner_id == "encode.xgboost_fixdepth.tuned")
+
+# Submit ----------------------------------------------------------------------------------------------------------
+
+# Isolate job ids by learner for testing
+ids_xgb <- findExperiments(algo.pars = learner_id == "encodee.xgboost.tuned")
 ids_ranger <- findExperiments(algo.pars = learner_id == "ranger.tuned")
 
-submitJobs(ids_xgb_fixdepth)
+submitJobs(ids_xgb)
+# submitJobs(ids_ranger)
 
-waitForJobs()
 getStatus()
